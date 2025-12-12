@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>TOOLS GỘP NHIỀU FILES</title>
+    <style>
+        /* Màu chủ đạo theo giao diện gốc (Be nhạt, Trắng, Cam, Xanh) */
+        body {
+            background-color: #FDF5E6; /* Màu Be nhạt */
+            font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 40px 20px;
+        }
+
+        h1 {
+            color: #E67E22; /* Màu Cam/Đỏ Cam đậm */
+            text-align: center;
+            margin: 20px 0 10px 0;
+            padding-bottom: 10px;
+            width: 90%;
+            max-width: 800px;
+            font-size: 2em;
+            font-weight: 700;
+        }
+
+        .container {
+            width: 90%;
+            max-width: 700px;
+            background-color: #FFFFFF;
+            padding: 30px;
+            border-radius: 12px; 
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); 
+            margin-top: 20px;
+        }
+
+        .step-group {
+            margin-bottom: 25px;
+            padding: 20px;
+            border: 1px solid #E6E6E6; /* Viền nhẹ */
+            border-radius: 8px;
+            background-color: #F7F7F7; /* Nền xám nhẹ cho từng bước */
+        }
+        
+        /* Tiêu đề bước */
+        .step-group h3 {
+            color: #34495E;
+            font-size: 1.1em;
+            margin-top: 0;
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+
+        label {
+            color: #34495E; 
+            font-weight: 600;
+            margin-bottom: 8px;
+            display: block;
+            font-size: 1em;
+        }
+
+        input[type="file"], input[type="date"] {
+            width: 100%;
+            border: 1px solid #BDC3C7;
+            border-radius: 6px;
+            padding: 10px;
+            background-color: #fff;
+            margin-bottom: 10px;
+            box-sizing: border-box; /* Quan trọng để padding không làm tăng width */
+            font-size: 1em;
+        }
+        
+        /* Nút Gộp (MÀU XANH ĐẬM - PRIMARY) */
+        button {
+            width: 100%;
+            background-color: #2C3E50; /* Xanh Đậm Navy */
+            color: #FFFFFF;
+            border: none;
+            padding: 14px 25px;
+            cursor: pointer;
+            border-radius: 8px;
+            font-weight: 700;
+            font-size: 1.1em;
+            transition: background-color 0.3s ease, transform 0.1s, box-shadow 0.3s;
+            margin-top: 10px;
+            box-shadow: 0 4px #212F3D; 
+        }
+
+        button:hover {
+            background-color: #212F3D;
+            transform: translateY(2px);
+            box-shadow: 0 2px #212F3D;
+        }
+        
+        /* Nút Export (MÀU CAM/ĐỎ CAM - SECONDARY/HIGHLIGHT) */
+        #exportButton {
+            background-color: #F39C12 !important; /* Cam Mới */
+            box-shadow: 0 4px #E67E22 !important; /* Đỏ Cam Đậm hơn */
+            color: #FFFFFF !important;
+        }
+
+        #exportButton:hover {
+            background-color: #E67E22 !important;
+            box-shadow: 0 2px #E67E22 !important;
+        }
+
+        #resultInfo {
+            margin-top: 30px;
+            font-weight: 600;
+            color: #34495E;
+            background-color: #ECF0F1; /* Nền thông báo nhẹ */
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 5px solid #3498DB; /* Màu xanh biển cho thông báo thành công */
+        }
+        
+        #resultInfo h2 {
+            color: #34495E;
+            font-size: 1.3em;
+            margin-top: 0;
+            margin-bottom: 10px;
+        }
+
+        #resultInfo p {
+            font-size: 0.95em;
+            line-height: 1.4;
+        }
+        
+        /* Đảm bảo nội dung thông báo LỌC VÀ TỔNG HỢP nổi bật */
+        #resultInfo p strong, #resultInfo .highlight {
+            color: #E67E22; /* Cam */
+            font-weight: 800;
+            background-color: #FDEBD0; /* Nền vàng nhạt */
+            padding: 2px 5px;
+            border-radius: 3px;
+        }
+        
+        #resultInfo ul {
+            list-style: none; 
+            padding-left: 0;
+            font-weight: normal;
+            font-size: 0.9em;
+            color: #555;
+            margin-top: 10px;
+        }
+        
+        #resultInfo ul li {
+            padding-left: 10px;
+            margin-bottom: 5px;
+        }
+
+        .error-message {
+             color: #C0392B; 
+             border-left: 3px solid #E74C3C; 
+             padding-left: 10px;
+             margin-top: 15px;
+             font-weight: 600;
+        }
+        
+        .modal {
+            /* Giữ nguyên style modal */
+        }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.0/xlsx.full.min.js"></script>
+</head>
+<body>
+    <h1>TOOLS GỘP NHIỀU FILES (Version 2.0)</h1>
+    <p class="text-gray-600">Tools được built bởi Nguyễn Trung, có gì thắc mắc liên hệ quoctrung.nguyen@shopee.com.</p>
+    <div class="container">
+        <div class="step-group">
+            <h3>Bước 1: Chọn nhiều File Excel/CSV cần gộp:</h3>
+            <input type="file" id="storageFiles" accept=".xlsx, .xls, .csv" multiple> 
+            
+            <button onclick="processFiles()">GỘP ALL DỮ LIỆU</button>
+        </div>
+        
+        <div class="step-group">
+            <h3>Bước 2: Filter Dữ liệu đã gộp theo Ngày **"Create Time"**:</h3>
+            <input type="date" id="dateFilter" onchange="applyDateFilter()" disabled>
+            
+            <button onclick="exportResult()" id="exportButton" disabled>EXPORT KẾT QUẢ</button>
+        </div>
+
+        <div id="resultInfo">
+            Chưa có file nào được tải lên. Vui lòng chọn file và nhấn <strong class="highlight">GỘP ALL DỮ LIỆU</strong>.
+        </div>
+    </div>
+
+    <div id="customAlert" class="modal" onclick="closeCustomAlert()">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <p id="customAlertMessage"></p>
+            <button onclick="closeCustomAlert()" class="modal-close">Đóng</button>
+        </div>
+    </div>
+
+    <script>
+        // --- LOGIC GỘP FILE VÀ LỌC NGÀY (GIỮ NGUYÊN) ---
+        let originalAllDataRows = []; 
+        let filteredDataRows = []; 
+        let finalHeaders = []; 
+        let isProcessed = false;
+        const TARGET_DATE_COLUMN_NAME = "create time"; 
+        let dateColumnIndex = -1; 
+        
+        const resultInfoElement = document.getElementById("resultInfo");
+        const exportButton = document.getElementById("exportButton");
+        const dateFilterElement = document.getElementById("dateFilter");
+
+        function showCustomAlert(message) {
+            document.getElementById("customAlertMessage").innerHTML = message;
+            document.getElementById("customAlert").style.display = "block";
+        }
+
+        function closeCustomAlert() {
+            document.getElementById("customAlert").style.display = "none";
+        }
+        
+        /**
+         * Lấy ngày theo định dạng YYYY-MM-DD từ giá trị cell Excel/CSV
+         */
+        function getLocalISODate(value) {
+            let dateObj = null;
+
+            if (value instanceof Date && !isNaN(value)) {
+                dateObj = value;
+            } else if (typeof value === 'string') {
+                let dateStringCleaned = value.trim();
+
+                if (dateStringCleaned.includes('/')) {
+                    const parts = dateStringCleaned.split(' ')[0].split('/');
+                    if (parts.length === 3 && parts[2].length === 4) {
+                        const [dd, mm, yyyy] = parts;
+                        dateObj = new Date(`${mm}/${dd}/${yyyy}`);
+                    }
+                } else if (dateStringCleaned.includes('-')) {
+                     const parts = dateStringCleaned.split(' ')[0].split('-');
+                     if (parts.length === 3) {
+                         if (parts[0].length <= 2 && parts[2].length === 4) {
+                             const [dd, mm, yyyy] = parts;
+                             dateObj = new Date(`${mm}/${dd}/${yyyy}`);
+                         } else if (parts[0].length === 4) {
+                            dateObj = new Date(dateStringCleaned);
+                         }
+                     }
+                }
+                
+                if (!dateObj || isNaN(dateObj.getTime())) {
+                    dateObj = new Date(value.trim()); 
+                }
+            }
+
+            if (dateObj && !isNaN(dateObj.getTime())) {
+                const yyyy = dateObj.getFullYear();
+                const mm = String(dateObj.getMonth() + 1).padStart(2, '0');
+                const dd = String(dateObj.getDate()).padStart(2, '0');
+                return `${yyyy}-${mm}-${dd}`;
+            }
+
+            return null;
+        }
+
+
+        function processSingleFile(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    try {
+                        const data = new Uint8Array(e.target.result);
+                        const workbook = XLSX.read(data, { type: 'array', cellDates: true }); 
+                        const firstSheetName = workbook.SheetNames[0];
+                        const worksheet = workbook.Sheets[firstSheetName];
+                        
+                        const rowsWithDates = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+                        const fileHeaders = rowsWithDates[0] || [];
+                        const dataRows = rowsWithDates.slice(1);
+                        
+                        if (fileHeaders.length === 0) {
+                             return reject({ name: file.name, reason: `File trống hoặc không có header.`, status: 'failure' });
+                        }
+
+                        resolve({ 
+                            name: file.name, 
+                            count: dataRows.length, 
+                            headers: fileHeaders,
+                            rows: dataRows, 
+                            status: 'success' 
+                        });
+                    } catch (error) {
+                        reject({ name: file.name, reason: `Lỗi khi đọc file. Vui lòng kiểm tra định dạng.`, status: 'failure' });
+                    }
+                };
+                reader.onerror = function() {
+                    reject({ name: file.name, reason: `Lỗi: Không thể đọc file.`, status: 'failure' });
+                };
+                reader.readAsArrayBuffer(file);
+            });
+        }
+
+        async function processFiles() {
+            const fileInput = document.getElementById('storageFiles');
+            const files = Array.from(fileInput.files);
+            
+            if (files.length === 0) {
+                showCustomAlert("⚠️ Vui lòng chọn ít nhất một file Excel/CSV để gộp.");
+                return;
+            }
+
+            originalAllDataRows = [];
+            filteredDataRows = [];
+            finalHeaders = [];
+            isProcessed = false;
+            dateColumnIndex = -1; 
+            exportButton.disabled = true;
+            dateFilterElement.disabled = true;
+            dateFilterElement.value = '';
+            
+            resultInfoElement.innerHTML = `Đang xử lý ${files.length} file... Vui lòng chờ...`;
+
+            let initialTotalCodes = 0;
+            let successFiles = [];
+            let failureMessages = [];
+
+            const processPromises = files.map(file => processSingleFile(file));
+
+            try {
+                const results = await Promise.allSettled(processPromises);
+                
+                results.forEach(result => {
+                    if (result.status === 'fulfilled' && result.value.status === 'success') {
+                        const fileData = result.value;
+                        successFiles.push(fileData);
+                        initialTotalCodes += fileData.count;
+
+                        if (finalHeaders.length === 0) {
+                            finalHeaders = fileData.headers;
+                            
+                            const targetHeader = finalHeaders.findIndex(header => 
+                                typeof header === 'string' && header.toLowerCase().trim() === TARGET_DATE_COLUMN_NAME
+                            );
+                            dateColumnIndex = targetHeader;
+                        }
+                        
+                        originalAllDataRows.push(...fileData.rows);
+
+                    } else if (result.status === 'rejected') {
+                        failureMessages.push(result.reason);
+                    }
+                });
+                
+                filteredDataRows = [...originalAllDataRows];
+                
+                updateResultDisplay(successFiles, failureMessages, originalAllDataRows.length);
+                isProcessed = true;
+                
+                const canFilter = originalAllDataRows.length > 0 && dateColumnIndex !== -1;
+                exportButton.disabled = originalAllDataRows.length === 0;
+                dateFilterElement.disabled = !canFilter; 
+
+                if (originalAllDataRows.length > 0 && dateColumnIndex === -1) {
+                    showCustomAlert(`⚠️ Gộp thành công, nhưng **Không tìm thấy cột "${TARGET_DATE_COLUMN_NAME.toUpperCase()}"** để kích hoạt chức năng lọc ngày.`);
+                } else if (originalAllDataRows.length > 0) {
+                    showCustomAlert(`✅ Hoàn tất gộp file! Tổng **${originalAllDataRows.length}** hàng. Bộ lọc ngày đã được kích hoạt.`);
+                }
+
+            } catch (error) {
+                showCustomAlert("❌ Lỗi hệ thống khi xử lý các file.");
+            }
+        }
+        
+        function applyDateFilter() {
+            const filterDate = dateFilterElement.value; // Giá trị lọc: YYYY-MM-DD
+            
+            if (dateColumnIndex === -1) {
+                showCustomAlert(`⚠️ Không tìm thấy cột "${TARGET_DATE_COLUMN_NAME.toUpperCase()}" để áp dụng bộ lọc.`);
+                return;
+            }
+
+            if (!filterDate) {
+                filteredDataRows = [...originalAllDataRows];
+            } else {
+                
+                filteredDataRows = originalAllDataRows.filter(row => {
+                    const cellValue = row[dateColumnIndex]; 
+                    const cellDateISO = getLocalISODate(cellValue);
+                    
+                    return cellDateISO === filterDate;
+                });
+            }
+
+            updateFilterDisplay(filteredDataRows.length);
+            exportButton.disabled = filteredDataRows.length === 0;
+            
+            if (filterDate && filteredDataRows.length === 0) {
+                 showCustomAlert(`🔍 Không tìm thấy dữ liệu nào khớp với ngày **${filterDate}** trong cột "${TARGET_DATE_COLUMN_NAME.toUpperCase()}".`);
+            } else if (filterDate) {
+                 const alertMsg = (originalAllDataRows.length - filteredDataRows.length) > 0 
+                    ? `⚠️ Đã lọc xong! Tìm thấy **${filteredDataRows.length}** hàng khớp với ngày **${filterDate}**.`
+                    : `✅ Đã lọc xong! Tìm thấy **${filteredDataRows.length}** hàng khớp với ngày **${filterDate}**.`;
+
+                 showCustomAlert(alertMsg);
+            } else {
+                 showCustomAlert(`✅ Đã bỏ lọc. Đang hiển thị tổng **${originalAllDataRows.length}** hàng.`);
+            }
+        }
+        
+        function updateFilterDisplay(filteredCount) {
+             const filterDate = dateFilterElement.value;
+             const totalRows = originalAllDataRows.length;
+             const columnName = TARGET_DATE_COLUMN_NAME.toUpperCase();
+             let filterStatus = "";
+
+             let baseContentHTML = resultInfoElement.innerHTML;
+             
+             // Tìm và giữ lại chi tiết file
+             let fileDetailContent = baseContentHTML.substring(baseContentHTML.indexOf('Chi tiết File đã Gộp:'));
+
+             if (filterDate) {
+                 filterStatus = `<p>
+                     * Đã áp dụng LỌC theo Ngày <strong class="highlight">${filterDate}</strong> trên cột '${columnName}': <strong class="highlight">${filteredCount}</strong> hàng.
+                 </p>`;
+             } else if (dateColumnIndex !== -1) {
+                 filterStatus = `<p style="color: #7F8C8D; font-weight: 600;">
+                     * Chưa áp dụng LỌC (Cột '${columnName}' đã được xác định). Đang hiển thị toàn bộ **${totalRows}** hàng.
+                 </p>`;
+             } else {
+                 filterStatus = `<p class="error-message">
+                     * **LƯU Ý:** Không tìm thấy cột '${columnName}'. Không thể lọc theo ngày.
+                 </p>`;
+             }
+             
+             let htmlContent = `
+                 <h2>Kết quả Tổng hợp:</h2>
+                 <p style="font-size: 1.1em; color: #3498DB; font-weight: 700;">
+                     ✅ Đã xử lý thành công File.<br>
+                     Tổng số hàng dữ liệu GỐC GỘP LẠI: <strong class="highlight">${totalRows}</strong>
+                 </p>
+                 <hr style="border: 0; border-top: 1px dashed #BDC3C7; margin: 15px 0;">
+                 ${filterStatus}
+                 <hr style="border: 0; border-top: 1px dashed #BDC3C7; margin: 15px 0;">
+             `;
+
+             // Thêm lại chi tiết file
+             if (baseContentHTML.includes('Chi tiết File đã Gộp:')) {
+                 htmlContent += fileDetailContent;
+             }
+
+             resultInfoElement.innerHTML = htmlContent;
+        }
+
+
+        function updateResultDisplay(successFiles, failureMessages, totalRows) {
+            let htmlContent = '';
+            const columnName = TARGET_DATE_COLUMN_NAME.toUpperCase();
+            
+            if (successFiles.length > 0) {
+                
+                let filterStatus = `<p style="color: #7F8C8D; font-weight: 600;">
+                    * ${dateColumnIndex !== -1 ? `Chưa áp dụng LỌC (Cột <strong class="highlight">${columnName}</strong> đã sẵn sàng).` : `Không tìm thấy cột <strong class="highlight">${columnName}</strong>. Không thể lọc.`} Đang hiển thị toàn bộ **${totalRows}** hàng.
+                </p>`;
+
+                htmlContent += `
+                    <h2>Kết quả Tổng hợp:</h2>
+                    <p style="font-size: 1.1em; color: #3498DB; font-weight: 700;">
+                        ✅ Đã xử lý thành công **${successFiles.length}/${successFiles.length + failureMessages.length}** file.<br>
+                        Tổng số hàng dữ liệu GỐC GỘP LẠI: <strong class="highlight">${totalRows}</strong>
+                    </p>
+                    <hr style="border: 0; border-top: 1px dashed #BDC3C7; margin: 15px 0;">
+                    ${filterStatus}
+                    <hr style="border: 0; border-top: 1px dashed #BDC3C7; margin: 15px 0;">
+                    <span style="font-weight: 700; color: #34495E;">Chi tiết File đã Gộp:</span>
+                    <ul style="margin-top: 10px;">
+                `;
+                
+                successFiles.forEach(file => {
+                    htmlContent += `<li>${file.name} (**${file.count}** hàng)</li>`;
+                });
+                htmlContent += '</ul>';
+
+                if (failureMessages.length > 0) {
+                    htmlContent += `<div class="error-message">
+                        ⚠️ Lỗi (${failureMessages.length} file) - Không thể trích xuất dữ liệu:
+                        <ul style="color: #E74C3C; list-style: none; padding-left: 0; margin-top: 5px; font-weight: normal;">
+                            ${failureMessages.map(m => `- **${m.name}**: ${m.reason}`).join('')}
+                        </ul>
+                    </div>`;
+                }
+                
+            } else {
+                htmlContent = `<span class="error-message" style="border-left: none;">❌ Không thể tải hoặc xử lý bất kỳ file nào. Vui lòng kiểm tra file và thử lại.</span>`;
+                if (failureMessages.length > 0) {
+                    htmlContent += `<div class="error-message">
+                        Chi tiết lỗi:
+                        <ul style="color: #E74C3C; list-style: none; padding-left: 0; margin-top: 5px; font-weight: normal;">
+                            ${failureMessages.map(m => `- **${m.name}**: ${m.reason}`).join('')}
+                        </ul>
+                    </div>`;
+                }
+            }
+            
+            resultInfoElement.innerHTML = htmlContent;
+        }
+
+        function exportResult() {
+            if (!isProcessed || filteredDataRows.length === 0) {
+                showCustomAlert("⚠️ Vui lòng gộp file trước hoặc danh sách dữ liệu đang trống/chưa được lọc.");
+                return;
+            }
+            
+            var sheetData = [finalHeaders, ...filteredDataRows]; 
+
+            var workbook = XLSX.utils.book_new();
+            var worksheet = XLSX.utils.aoa_to_sheet(sheetData);
+
+            if (dateColumnIndex !== -1) {
+                const dateNumFmt = 'dd/mm/yyyy hh:mm'; 
+                
+                for (let R = 1; R < sheetData.length; ++R) {
+                    const cell_address = XLSX.utils.encode_cell({c: dateColumnIndex, r: R});
+                    const cell = worksheet[cell_address];
+
+                    if (cell && cell.t === 'd') {
+                        cell.z = dateNumFmt; 
+                    } 
+                }
+            }
+
+            XLSX.utils.book_append_sheet(workbook, worksheet, "DuLieuTongHop_Loc");
+
+            var currentDate = new Date();
+            var dd = String(currentDate.getDate()).padStart(2, '0');
+            var mm = String(currentDate.getMonth() + 1).padStart(2, '0');
+            var hh = String(currentDate.getHours()).padStart(2, '0');
+            var min = String(currentDate.getMinutes()).padStart(2, '0');
+            
+            var fileName = `GopFile_Filtered_${dd}${mm}_${hh}${min}_${filteredDataRows.length}Rows.xlsx`;
+
+            XLSX.writeFile(workbook, fileName);
+            
+            showCustomAlert(`✅ Đã xuất thành công file **${fileName}**! File chứa **${filteredDataRows.length}** hàng dữ liệu. (Đã tối ưu định dạng ngày tháng)`);
+        }
+
+        window.onload = function() {
+            document.getElementById("storageFiles").focus();
+        };
+
+    </script>
+</body>
+</html>
