@@ -1,0 +1,301 @@
+  <!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8" />
+  <title>Batch Code128 Barcode Generator</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <!-- JsBarcode CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script>
+  <style>
+    :root {
+      --bg: #0b1220;
+      --panel: #121a2b;
+      --muted: #9fb0d0;
+      --text: #eaf1ff;
+      --accent: #5aa9ff;
+      --accent-2: #7dd3fc;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Inter, Arial, sans-serif;
+      background: linear-gradient(180deg, var(--bg), #0e172a);
+      color: var(--text);
+      min-height: 100vh;
+    }
+    header { padding: 20px 16px; text-align: center; }
+    header h1 { margin: 0 0 6px; font-size: 22px; font-weight: 700; letter-spacing: .3px; }
+    header p { margin: 0; color: var(--muted); font-size: 13px; }
+
+    .container { max-width: 1100px; margin: 16px auto 48px; padding: 16px; }
+    .panel {
+      background: linear-gradient(180deg, var(--panel), #0e1627);
+      border: 1px solid #1e2a44;
+      border-radius: 14px;
+      padding: 16px;
+      box-shadow: 0 6px 24px rgba(0,0,0,.25), inset 0 1px 0 rgba(255,255,255,.04);
+    }
+    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+
+    textarea {
+      width: 100%;
+      min-height: 260px;
+      resize: vertical;
+      border: 1px solid #2a3757;
+      background: #0c1426;
+      color: var(--text);
+      border-radius: 10px;
+      padding: 12px;
+      font-size: 13px;
+      line-height: 1.45;
+      outline: none;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.03);
+    }
+    .controls { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-top: 10px; }
+    label { font-size: 12px; color: var(--muted); margin-right: 8px; }
+    input[type="number"] {
+      width: 90px; border: 1px solid #2a3757; background: #0c1426; color: var(--text);
+      border-radius: 8px; padding: 6px 8px; font-size: 13px; outline: none;
+    }
+    .btn {
+      appearance: none;
+      border: 1px solid #1e3a8a;
+      background: linear-gradient(180deg, #1e40af, #1d4ed8);
+      color: white; padding: 10px 14px; border-radius: 10px; font-weight: 600; cursor: pointer;
+      box-shadow: 0 6px 16px rgba(29,78,216,.35), inset 0 1px 0 rgba(255,255,255,.15);
+      transition: transform .05s ease, box-shadow .2s ease;
+    }
+    .btn:hover { box-shadow: 0 10px 22px rgba(29,78,216,.45); }
+    .btn:active { transform: translateY(1px); }
+    .btn.secondary {
+      background: linear-gradient(180deg, #0b132a, #0b1020);
+      border-color: #2a3757; color: var(--muted);
+      box-shadow: 0 6px 16px rgba(0,0,0,.25), inset 0 1px 0 rgba(255,255,255,.06);
+    }
+    .status { margin-top: 12px; font-size: 12px; color: var(--muted); }
+    .progress {
+      height: 8px; background: #0b1324; border: 1px solid #1f2a46; border-radius: 999px;
+      overflow: hidden; margin-top: 8px;
+    }
+    .progress > div {
+      height: 100%; width: 0%; background: linear-gradient(90deg, var(--accent), var(--accent-2));
+      transition: width .25s ease;
+    }
+
+    /* ======== LIGHT AREA FOR BARCODE RESULTS ======== */
+    .results-panel {
+      background: #ffffff;
+      color: #111827;
+      border: 1px solid #e5e7eb;
+      border-radius: 12px;
+      padding: 12px;
+      box-shadow: 0 10px 24px rgba(0,0,0,.12);
+    }
+    .results-panel .label { color: #374151; }
+
+    .list {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 14px;
+      margin-top: 10px;
+    }
+    .card {
+      background: #ffffff;            /* light */
+      border: 1px solid #e5e7eb;      /* light */
+      border-radius: 12px;
+      padding: 12px;
+      box-shadow: 0 4px 10px rgba(0,0,0,.06); /* nhẹ nhàng */
+    }
+    .label {
+      font-size: 11px;
+      color: #374151;                 /* light text */
+      margin-bottom: 6px;
+      letter-spacing: .2px;
+    }
+    .code {
+      font-size: 12px;
+      font-weight: 600;
+      color: #111827;                 /* dark text for readability */
+      margin-top: 8px;
+      word-break: break-all;
+    }
+    svg { width: 100%; height: auto; }
+
+    /* Print layout */
+    @media print {
+      body { background: white; }
+      header, .panel.controls-panel { display: none !important; }
+      .list { grid-template-columns: repeat(2, 1fr); gap: 12px; }
+      .card { break-inside: avoid; border: 1px solid #ddd; box-shadow: none; }
+      .code { color: #000; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Batch Code128 Generator</h1>
+    <p>Dán danh sách mã đơn (mỗi dòng 1 mã) → tạo barcode Code128 (SVG)</p>
+  </header>
+
+  <div class="container">
+    <div class="panel controls-panel">
+      <div class="grid">
+        <!-- Cột trái: nhập & tuỳ chọn -->
+        <div>
+          <label for="input">Danh sách mã cần in (1 dòng = 1 mã)</label>
+          <textarea id="input" placeholder="VD:
+SO-10001
+SO-10002
+VNNC-998877
+1234567890"></textarea>
+          <div class="controls">
+            <button class="btn" id="generate">Tạo barcode</button>
+            <button class="btn secondary" id="clear">Xoá kết quả</button>
+            <button class="btn secondary" id="print">In / Lưu PDF</button>
+          </div>
+          <div class="controls" style="margin-top:8px">
+            <label>Chiều cao (px): <input type="number" id="height" min="20" max="300" value="80"></label>
+            <label>Độ dày vạch (px): <input type="number" id="width" min="1" max="10" value="2"></label>
+            <label>Khoảng trắng (px): <input type="number" id="margin" min="0" max="30" value="10"></label>
+            <label>Kèm mã dưới vạch: <input type="checkbox" id="displayValue" checked></label>
+          </div>
+          <div class="status" id="status">Sẵn sàng.</div>
+          <div class="progress"><div id="bar"></div></div>
+        </div>
+
+        <!-- Cột phải: kết quả (LIGHT) -->
+        <div class="results-panel">
+          <div class="label">Kết quả (SVG, nền sáng, in đẹp):</div>
+          <div id="results" class="list"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const $ = (q) => document.querySelector(q);
+
+    const inputEl = $('#input');
+    const resultsEl = $('#results');
+    const statusEl = $('#status');
+    const barEl = $('#bar');
+
+    const heightEl = $('#height');
+    const widthEl  = $('#width');
+    const marginEl = $('#margin');
+    const displayValueEl = $('#displayValue');
+
+    const btnGenerate = $('#generate');
+    const btnClear = $('#clear');
+    const btnPrint = $('#print');
+
+    // Batch settings for large lists (~4000)
+    const BATCH_SIZE = 200;      // render 200 barcodes / batch
+    const BATCH_DELAY = 10;      // ms between batches
+
+    function parseLines(raw) {
+      return raw
+        .split(/\r?\n/)
+        .map(s => s.trim())
+        .filter(s => s.length > 0);
+    }
+
+    function createCard(codeText) {
+      const card = document.createElement('div');
+      card.className = 'card';
+
+      const label = document.createElement('div');
+      label.className = 'label';
+      label.textContent = 'Code128';
+      card.appendChild(label);
+
+      const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+      svg.setAttribute('aria-label', codeText);
+      card.appendChild(svg);
+
+      const code = document.createElement('div');
+      code.className = 'code';
+      code.textContent = codeText;
+      card.appendChild(code);
+
+      return { card, svg };
+    }
+
+    function updateProgress(done, total) {
+      const pct = total ? Math.round(done / total * 100) : 0;
+      barEl.style.width = pct + '%';
+      statusEl.textContent = total
+        ? `Đã tạo ${done}/${total} barcode (${pct}%).`
+        : 'Sẵn sàng.';
+    }
+
+    async function renderBatch(codes, opts) {
+      resultsEl.innerHTML = '';
+      updateProgress(0, codes.length);
+
+      let done = 0;
+      for (let i = 0; i < codes.length; i += BATCH_SIZE) {
+        const chunk = codes.slice(i, i + BATCH_SIZE);
+
+        for (const codeText of chunk) {
+          const { card, svg } = createCard(codeText);
+          resultsEl.appendChild(card);
+
+          try {
+            JsBarcode(svg, codeText, {
+              format: "code128",
+              lineColor: "#000000",
+              height: opts.height,
+              width: opts.width,
+              margin: opts.margin,
+              displayValue: opts.displayValue,
+              fontSize: 14,
+              textMargin: 4,
+              background: "#ffffff" // NỀN TRẮNG cho SVG (light area)
+            });
+          } catch (err) {
+            const errMsg = document.createElement('div');
+            errMsg.style.color = "#b91c1c";
+            errMsg.style.fontSize = "12px";
+            errMsg.style.marginTop = "6px";
+            errMsg.textContent = "Lỗi: " + err.message;
+            card.appendChild(errMsg);
+          }
+
+          done++;
+        }
+
+        updateProgress(done, codes.length);
+        await new Promise(res => setTimeout(res, BATCH_DELAY));
+      }
+
+      statusEl.textContent += " Hoàn tất.";
+    }
+
+    btnGenerate.addEventListener('click', async () => {
+      const codes = parseLines(inputEl.value);
+      if (codes.length === 0) {
+        statusEl.textContent = 'Vui lòng dán danh sách mã (mỗi dòng 1 mã).';
+        return;
+      }
+      const opts = {
+        height: Math.max(20, Math.min(300, Number(heightEl.value) || 80)),
+        width:  Math.max(1,  Math.min(10,  Number(widthEl.value)  || 2)),
+        margin: Math.max(0,  Math.min(30,  Number(marginEl.value) || 10)),
+        displayValue: displayValueEl.checked
+      };
+      statusEl.textContent = 'Đang xử lý…';
+      barEl.style.width = '0%';
+      renderBatch(codes, opts);
+    });
+
+    btnClear.addEventListener('click', () => {
+      resultsEl.innerHTML = '';
+      barEl.style.width = '0%';
+      statusEl.textContent = 'Đã xoá kết quả.';
+    });
+
+    btnPrint.addEventListener('click', () => window.print());
+  </script>
+</body>
+</html>
