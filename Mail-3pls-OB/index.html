@@ -147,7 +147,7 @@
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
                             </svg>
-                            Add Order
+                            Add Order Pending
                         </button>
 
                         <button id="export-btn" class="bg-green-500 hover:bg-green-600 text-white font-semibold py-2 px-4 rounded-md transition-colors flex items-center">
@@ -157,6 +157,13 @@
                         <button id="text-to-email-btn" class="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded-md transition-colors flex items-center">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
                             Text to Email
+                        </button>
+
+                        <button id="add-order-ck-btn" class="bg-teal-600 hover:bg-teal-700 text-white font-semibold py-2 px-4 rounded-md transition-colors flex items-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
+                            </svg>
+                            Add Order CK
                         </button>
 
                         <button id="show-summary-btn" class="bg-orange-500 hover:bg-orange-600 text-white font-semibold py-2 px-4 rounded-md transition-colors flex items-center">
@@ -221,12 +228,24 @@
 
     <div id="add-order-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 hidden modal-overlay">
         <div class="bg-white rounded-lg shadow-xl p-6 w-full max-w-md modal-container">
-            <h3 class="text-lg font-bold mb-4">Add Orders</h3>
+            <h3 class="text-lg font-bold mb-4">Add Orders Pending</h3>
             <p class="text-sm text-gray-600 mb-4">Dán danh sách mã đơn hàng (LM Tracking Number) cần thêm, mỗi mã một dòng.</p>
             <textarea id="add-tracking-numbers" class="w-full h-40 p-2 border border-gray-300 rounded-md" placeholder="NTF...&#10;SPXVN...&#10;..."></textarea>
             <div class="mt-6 flex justify-end space-x-3">
                 <button id="close-add-modal-btn" class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-2 px-4 rounded-md transition-colors">Đóng</button>
                 <button id="submit-add-btn" class="bg-yellow-500 hover:bg-yellow-600 text-white font-semibold py-2 px-4 rounded-md transition-colors">Xác nhận Thêm</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="add-order-ck-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 hidden modal-overlay">
+        <div class="bg-white rounded-lg shadow-xl p-6 w-full max-w-md modal-container">
+            <h3 class="text-lg font-bold mb-4">Add Order CK (Ahamove_CK)</h3>
+            <p class="text-sm text-gray-600 mb-4">Dán danh sách mã đơn hàng (LM Tracking Number) cần thêm vào AhamoveCK, mỗi mã một dòng.</p>
+            <textarea id="add-ck-tracking-numbers" class="w-full h-40 p-2 border border-gray-300 rounded-md" placeholder="NTF...&#10;SPXVN...&#10;..."></textarea>
+            <div class="mt-6 flex justify-end space-x-3">
+                <button id="close-add-ck-modal-btn" class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-2 px-4 rounded-md transition-colors">Đóng</button>
+                <button id="submit-add-ck-btn" class="bg-purple-500 hover:bg-purple-600 text-white font-semibold py-2 px-4 rounded-md transition-colors">Xác nhận Thêm CK</button>
             </div>
         </div>
     </div>
@@ -314,6 +333,11 @@
         const closeAddModalBtn = document.getElementById('close-add-modal-btn');
         const submitAddBtn = document.getElementById('submit-add-btn');
         const addTrackingTextarea = document.getElementById('add-tracking-numbers');
+        const addOrderCkBtn = document.getElementById('add-order-ck-btn');
+        const addOrderCkModal = document.getElementById('add-order-ck-modal');
+        const closeAddCkModalBtn = document.getElementById('close-add-ck-modal-btn');
+        const submitAddCkBtn = document.getElementById('submit-add-ck-btn');
+        const addCkTrackingTextarea = document.getElementById('add-ck-tracking-numbers');
         const showSummaryBtn = document.getElementById('show-summary-btn');
         const summaryModal = document.getElementById('summary-modal');
         const closeSummaryBtn = document.getElementById('close-summary-btn');
@@ -351,6 +375,14 @@
         });
 
         submitAddBtn.addEventListener('click', handleOrderAdding);
+
+        addOrderCkBtn.addEventListener('click', () => addOrderCkModal.classList.remove('hidden'));
+        closeAddCkModalBtn.addEventListener('click', () => {
+            addOrderCkModal.classList.add('hidden');
+            addCkTrackingTextarea.value = '';
+        });
+
+        submitAddCkBtn.addEventListener('click', handleOrderAddingCK);
 
         showSummaryBtn.addEventListener('click', () => {
             updateSummaryTable(); // Cập nhật dữ liệu mỗi lần mở
@@ -811,6 +843,62 @@
             addOrderModal.classList.add('hidden');
             addTrackingTextarea.value = '';
             alert(`${trackingNumbersToAdd.size} đơn hàng đã được thêm lại.`);
+        }
+
+        function handleOrderAddingCK() {
+            const trackingNumbersToAdd = new Set(
+                addCkTrackingTextarea.value.split('\n').map(tn => tn.trim()).filter(Boolean)
+            );
+            if (trackingNumbersToAdd.size === 0) {
+                alert('Vui lòng nhập ít nhất một mã đơn hàng.');
+                return;
+            }
+
+            let addedCount = 0;
+            let skippedCount = 0;
+
+            // Lấy data của order từ allData (vì processedData có thể đã bị remove trước đó)
+            trackingNumbersToAdd.forEach(trackingNo => {
+                // Kiểm tra nếu đã có trong addingData thì bỏ qua
+                if (addingData.some(item => item['LM Tracking No'] === trackingNo)) {
+                    skippedCount++;
+                    return;
+                }
+
+                // Tìm order trong allData
+                const foundOrder = allData.find(item => String(item['LM Tracking No']) === trackingNo);
+                if (foundOrder) {
+                    // Chỉ thêm các đơn có "GHN - Hàng Cồng Kềnh" và chuyển thành AhamoveCK
+                    const original3PL = foundOrder['New 3PL'] || 'N/A';
+                    if (original3PL === 'GHN - Hàng Cồng Kềnh') {
+                        // Đổi format để giống processedData, nhưng force New 3PL thành AhamoveCK
+                        addingData.push({
+                            'New 3PL': 'AhamoveCK',
+                            'LM Tracking No': String(foundOrder['LM Tracking No'] || 'N/A'),
+                            'Status': String(foundOrder['Status']),
+                            'Shipped Time': foundOrder['Shipped Time'] ? formatDateToYYYYMMDD(foundOrder['Shipped Time']) : 'N/A',
+                            'Shipped by': String(foundOrder['Shipped by'] || '')
+                        });
+                        // Nếu order này còn trong processedData, thì xóa ra (tránh duplicate)
+                        processedData = processedData.filter(row => row['LM Tracking No'] !== trackingNo);
+                        addedCount++;
+                    } else {
+                        skippedCount++;
+                    }
+                } else {
+                    skippedCount++;
+                }
+            });
+
+            applyFilters(); // Để update lại table
+            addOrderCkModal.classList.add('hidden');
+            addCkTrackingTextarea.value = '';
+            
+            if (skippedCount > 0) {
+                alert(`${addedCount} đơn hàng CK đã được thêm vào AhamoveCK.\n${skippedCount} đơn hàng được bỏ qua (không phải GHN - Hàng Cồng Kềnh hoặc đã tồn tại).`);
+            } else {
+                alert(`${addedCount} đơn hàng CK đã được thêm vào AhamoveCK.`);
+            }
         }
 
 
