@@ -13,9 +13,18 @@
         }
 
         h1 {
-            color: #333;
-            text-align: center;
-            margin: 20px 0 10px 0;
+            color: #FFFFFF;
+            text-align: left;
+            margin: 0;
+            padding: 0;
+            font-size: 20px;
+            font-weight: bold;
+        }
+        
+        .shopee-text-animated {
+            color: #FFFFFF;
+            font-weight: 700;
+            display: inline-block;
         }
 
         .text-gray-600 {
@@ -44,12 +53,12 @@
         }
 
         .form-group, .file-input-group {
-            margin-bottom: 15px;
-            padding: 15px;
+            margin-bottom: 10px;
+            padding: 12px;
             border: 1px solid #ccc;
             border-radius: 8px;
             background-color: #fff;
-            width: 90%;
+            width: 98%;
             box-sizing: border-box;
             display: flex;
             flex-wrap: wrap; 
@@ -82,8 +91,8 @@
 
         table {
             border-collapse: collapse;
-            width: 90%;
-            margin-top: 10px;
+            width: 98%;
+            margin-top: 8px;
             background-color: white;
             border-radius: 5px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
@@ -112,12 +121,12 @@
         }
         
         #storageInfo {
-            margin-top: 5px;
+            margin-top: 3px;
             font-weight: bold;
             color: #008CBA;
-            width: 90%;
+            width: 98%;
             background-color: #E0F7FA; 
-            padding: 10px;
+            padding: 8px;
             border-radius: 5px;
             border: 1px solid #B2EBF2;
         }
@@ -195,91 +204,86 @@
         }
 
         .config-section input[type="text"] {
-            width: 95%;
+            width: 110%;
             max-width: none;
         }
 
-        /* Header Styling */
+        /* Header Styling (compact layout) */
         .header-box {
-            border: 3px solid #FF4500;
-            border-radius: 8px;
-            padding: 20px;
-            background-color: #fff;
-            width: 90%;
-            margin-bottom: 20px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-            text-align: center;
+            background: linear-gradient(260deg, #fb7a1f 0%, #fa6e23 100%);
+            border-radius: 65px;
+            padding: 40px 25px;
+            width: 96%;
+            margin: 4px auto 6px auto;
+            box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
         }
 
         .header-title {
             display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 12px;
-            margin-bottom: 10px;
-            flex-wrap: wrap;
+            align-items: flex-start;
+            justify-content: flex-start;
+            gap: 8px;
+            width: 100%;
         }
 
         .shopee-icon-small {
-            width: 40px;
-            height: 40px;
-            background: linear-gradient(135deg, #EE4D2D 0%, #FF6B35 100%);
-            border-radius: 6px;
+            background-color: rgba(255,255,255,0.12);
+            color: #FFFFFF;
+            width: 48px;
+            height: 48px;
+            border: 2px solid rgba(255,255,255,0.95);
+            border-radius: 8px;
             display: flex;
             align-items: center;
             justify-content: center;
-            color: white;
+            font-weight: 800;
             font-size: 24px;
-            font-weight: bold;
-            box-shadow: 0 2px 8px rgba(238, 77, 45, 0.3);
-            animation: shopeeIconFloat 2.5s ease-in-out infinite;
+            flex-shrink: 0;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.12);
+            transform-origin: center;
+            transition: transform 180ms ease, box-shadow 180ms ease;
+            animation: shopeeIconFloat 2.8s ease-in-out infinite;
+        }
+
+        .shopee-icon-small:hover {
+            transform: translateY(-2px) scale(1.05);
+            box-shadow: 0 8px 18px rgba(0,0,0,0.15);
         }
 
         @keyframes shopeeIconFloat {
-            0%, 100% {
-                transform: translateY(0) scale(1);
-            }
-            50% {
-                transform: translateY(-6px) scale(1.05);
-            }
+            0% { transform: translateY(0) scale(1); }
+            50% { transform: translateY(-3px) scale(1.02); }
+            100% { transform: translateY(0) scale(1); }
         }
 
         .header-title h1 {
             margin: 0;
-            color: #333;
-            font-size: 24px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            flex-wrap: wrap;
-            justify-content: center;
+            color: #FFFFFF;
+            font-family: Arial, sans-serif;
+            font-size: 32px;
+            font-weight: 800;
+            letter-spacing: 0px;
+            text-align: left;
+            line-height: 1.1;
         }
 
         .shopee-text-animated {
-            background: linear-gradient(135deg, #EE4D2D 0%, #FF6B35 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            font-weight: 700;
-            animation: shopeeTextGlow 2.5s ease-in-out infinite;
-        }
-
-        @keyframes shopeeTextGlow {
-            0%, 100% {
-                text-shadow: 0 0 0px transparent;
-                filter: brightness(1);
-            }
-            50% {
-                text-shadow: 0 0 15px rgba(238, 77, 45, 0.5), 0 0 30px rgba(255, 107, 53, 0.3);
-                filter: brightness(1.1);
-            }
+            color: #FFFFFF;
+            font-weight: 800;
+            display: inline-block;
         }
 
         .header-description {
-            color: #666;
+            color: #FFFFFF;
+            font-family: Arial, sans-serif;
             font-size: 14px;
-            margin: 0;
-            line-height: 1.4;
+            margin: 2px 0 0 58px;
+            line-height: 1;
+            opacity: 0.95;
+            font-weight: 700;
         }
     </style>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.0/xlsx.full.min.js"></script>
@@ -293,7 +297,7 @@
     <div class="header-box">
         <div class="header-title">
             <div class="shopee-icon-small">S</div>
-            <h1>Quản lý Đơn hàng (<span class="shopee-text-animated">SHOPEE</span> - Version 2.7)</h1>
+            <h1>[VNS] Tools Handover 3pls - Version 2.7</h1>
         </div>
         <p class="header-description">Tools được built bởi Nguyễn Trung, có gì thắc mắc liên hệ quoctrung.nguyen@shopee.com.</p>
     </div>
@@ -306,7 +310,7 @@
         <label for="3PL">3PL: </label>
         <select id="3PL" onchange="onSelect3PL()">
             <option value="">Chọn một 3PL</option>
-            <option value="Ahamove">Ahamove (21 ký tự)</option>
+            <option value="Ahamove">Ahamove (21 ký tự hoặc 14 ký tự)</option>
             <option value="BEST">BEST (14 ký tự)</option>
             <option value="Giao Hàng Nhanh">Giao Hàng Nhanh (8 ký tự)</option>
             <option value="AHM CK">AHM CK (8 ký tự)</option>
@@ -570,7 +574,7 @@
 
         // Định nghĩa số ký tự cho mỗi 3PL
         const pl3CharacterLength = {
-            'Ahamove': 21,
+            'Ahamove': 'special', // 21 ký tự hoặc 14 ký tự
             'BEST': 14,
             'Giao Hàng Nhanh': 8,
             'AHM CK': 8,
@@ -598,28 +602,62 @@
                 return;
             }
             
-            const requiredLength = pl3CharacterLength[selected3PL];
-            const currentLength = orderCode.length;
-            
-            if (currentLength === 0) {
-                infoElement.innerHTML = `📝 Cần ${requiredLength} ký tự`;
-                infoElement.style.color = '#666';
-            } else if (currentLength < requiredLength) {
-                infoElement.innerHTML = `⚠️ Cần ${requiredLength} ký tự, còn cần ${requiredLength - currentLength}`;
-                infoElement.style.color = '#ff8800';
-            } else if (currentLength === requiredLength) {
-                infoElement.innerHTML = `✅ Đúng ${requiredLength} ký tự`;
-                infoElement.style.color = '#008000';
+            if (selected3PL === 'Ahamove') {
+                // Ahamove: 21 ký tự hoặc 14 ký tự
+                const currentLength = orderCode.length;
+                
+                if (currentLength === 0) {
+                    infoElement.innerHTML = `📝 Nhập 21 ký tự hoặc 14 ký tự`;
+                    infoElement.style.color = '#666';
+                } else if (currentLength < 14) {
+                    infoElement.innerHTML = `⚠️ Cần 14 hoặc 21 ký tự, còn cần ${14 - currentLength} (hoặc ${21 - currentLength})`;
+                    infoElement.style.color = '#ff8800';
+                } else if (currentLength === 14) {
+                    infoElement.innerHTML = `✅ Đúng 14 ký tự`;
+                    infoElement.style.color = '#008000';
+                } else if (currentLength < 21) {
+                    infoElement.innerHTML = `⚠️ Cần 21 ký tự, còn cần ${21 - currentLength}`;
+                    infoElement.style.color = '#ff8800';
+                } else if (currentLength === 21) {
+                    infoElement.innerHTML = `✅ Đúng 21 ký tự`;
+                    infoElement.style.color = '#008000';
+                } else {
+                    infoElement.innerHTML = `❌ Quá 21 ký tự (thừa ${currentLength - 21})`;
+                    infoElement.style.color = '#ff0000';
+                }
             } else {
-                infoElement.innerHTML = `❌ Quá ${requiredLength} ký tự (thừa ${currentLength - requiredLength})`;
-                infoElement.style.color = '#ff0000';
+                // Các 3PL khác: kiểm tra độ dài cố định
+                const requiredLength = pl3CharacterLength[selected3PL];
+                const currentLength = orderCode.length;
+                
+                if (currentLength === 0) {
+                    infoElement.innerHTML = `📝 Cần ${requiredLength} ký tự`;
+                    infoElement.style.color = '#666';
+                } else if (currentLength < requiredLength) {
+                    infoElement.innerHTML = `⚠️ Cần ${requiredLength} ký tự, còn cần ${requiredLength - currentLength}`;
+                    infoElement.style.color = '#ff8800';
+                } else if (currentLength === requiredLength) {
+                    infoElement.innerHTML = `✅ Đúng ${requiredLength} ký tự`;
+                    infoElement.style.color = '#008000';
+                } else {
+                    infoElement.innerHTML = `❌ Quá ${requiredLength} ký tự (thừa ${currentLength - requiredLength})`;
+                    infoElement.style.color = '#ff0000';
+                }
             }
         }
 
         function isValidOrderCode(orderCode, selected3PL) {
             if (!selected3PL) return false;
-            const requiredLength = pl3CharacterLength[selected3PL];
-            return orderCode.length === requiredLength;
+            
+            if (selected3PL === 'Ahamove') {
+                // Ahamove: 21 ký tự hoặc 14 ký tự (bất kỳ ký tự nào)
+                const length = orderCode.length;
+                return length === 21 || length === 14;
+            } else {
+                // Các 3PL khác: kiểm tra độ dài cố định
+                const requiredLength = pl3CharacterLength[selected3PL];
+                return orderCode.length === requiredLength;
+            }
         }
 
         function handleEnterKey(event) {
