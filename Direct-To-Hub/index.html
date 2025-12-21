@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sort Direct TO Hub</title>
+    <link rel="icon" href="icon.png">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.0/xlsx.full.min.js"></script>
+    <style>
+        .bg-shopee-header { background-color: #333333; }
+        .text-shopee-orange { color: #ee4d2d; }
+        .btn-gradient { background: linear-gradient(120deg, #ff7337 0%, #ee4d2d 100%); }
+        .bg-table-header { background-color: #008000; }
+        body { background-color: #f5f5f5; font-family: Arial, Helvetica, sans-serif; }
+        .header-container { position: relative; display: flex; align-items: center; justify-content: space-between; height: 120px; }
+        .header-title-center { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); white-space: nowrap; width: auto; text-align: center; }
+    </style>
+</head>
+<body class="flex flex-col min-h-screen">
+
+    <audio id="sound_success" src="success.mp3" preload="auto"></audio>
+    <audio id="sound_error" src="error.mp3" preload="auto"></audio>
+    
+    <audio id="sound_5009" src="5009.mp3" preload="auto"></audio> <audio id="sound_5174" src="5174.mp3" preload="auto"></audio> <audio id="sound_5001" src="5001.mp3" preload="auto"></audio> <audio id="sound_5007" src="5007.mp3" preload="auto"></audio> <audio id="sound_5194" src="5194.mp3" preload="auto"></audio> <audio id="sound_142"  src="142.mp3"  preload="auto"></audio> <audio id="sound_5195" src="5195.mp3" preload="auto"></audio> <header class="bg-shopee-header text-white shadow-md">
+        <div class="container mx-auto px-6 header-container">
+            <div class="z-10"> 
+                <span class="text-shopee-orange" style="font-size: 40px; font-weight: bold;">Shopee</span>
+            </div>
+            <div class="header-title-center">
+                <h1 style="font-size: 50px; color: white; font-weight: bold;">Sort Direct TO Hub</h1>
+            </div>
+            <div class="w-10"></div> 
+        </div>
+    </header>
+
+    <main class="flex-grow container mx-auto flex justify-center mt-10 p-4">
+        <div class="bg-white p-6 rounded shadow-sm w-full max-w-3xl border border-gray-200">
+            
+            <div class="mb-6">
+                <input type="text" id="searchInput" placeholder="Nhập WMS Order No" 
+                       class="w-full border border-gray-300 rounded p-3 focus:outline-none focus:border-shopee-orange text-gray-700">
+                <button onclick="checkDevice()" 
+                        class="btn-gradient text-white font-bold py-2 px-6 rounded mt-4 shadow-sm hover:opacity-90 transition-opacity uppercase text-sm">
+                    Kiểm tra
+                </button>
+            </div>
+
+            <div id="resultArea" class="hidden">
+                <div class="border border-gray-200 rounded overflow-hidden">
+                    <table class="w-full text-left border-collapse">
+                        <tbody>
+                            <tr class="bg-table-header text-white font-bold" style="font-size: 24px;"> 
+                                <td class="p-3 border-b border-gray-300 w-1/3">LM Tracking No</td>
+                                <td class="p-3 border-b border-gray-300 font-bold" id="res_wms">...</td>
+                             </tr>
+                            <tr class="bg-white">
+                                <td class="p-3 border-b border-gray-200 font-bold text-gray-800">Create Time</td>
+                                <td class="p-3 border-b border-gray-200 font-bold" id="res_createTime">...</td>
+                            </tr>
+                            <tr class="bg-white">
+                                <td class="p-3 border-b border-gray-200 font-bold text-gray-800">Status</td>
+                                <td class="p-3 border-b border-gray-200 font-bold uppercase" id="res_status">...</td>
+                            </tr>
+                            <tr class="bg-white">
+                                <td class="p-3 border-b border-gray-200 font-bold text-gray-800">Hub</td>
+                                <td class="p-3 border-b border-gray-200 font-bold uppercase" id="res_hub" style="color: #ee4d2d; font-size: 18px;">...</td>
+                            </tr>
+                            <tr class="bg-white">
+                                <td class="p-3 font-bold text-gray-800">Hub Time run</td>
+                                <td class="p-3 font-bold" id="res_hubTime">...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div id="errorMsg" class="hidden mt-4 text-red-500 font-bold text-center">
+                Không tìm thấy Order No này!
+            </div>
+        </div>
+    </main>
+
+    <footer class="text-center py-4 text-gray-500" style="font-size: 14px;">
+        <p>© 2025 Device Check - VN. Tools. Built by quoctrung.nguyen@shopee.com</p>
+    </footer>
+
+    <script>
+        // --- LINK API CỦA BẠN ---
+        const API_URL = "https://script.google.com/macros/s/AKfycbxe6yoqXCT7nUzIVIKdSMl_qcaZzLvefAlTTg8prQbDfUtJCU2c0du10-Z70tEjctffGg/exec"; 
+        
+        let database = []; 
+        const errorAudio = document.getElementById("sound_error");
+        const successAudio = document.getElementById("sound_success");
+
+        async function fetchData() {
+            const btn = document.querySelector('button');
+            const inputEl = document.getElementById('searchInput'); 
+            btn.innerText = "LOADING DATA...";
+            btn.disabled = true;
+            btn.classList.add('opacity-50');
+
+            try {
+                const response = await fetch(API_URL);
+                const data = await response.json();
+                if (data.error) { alert("Lỗi API: " + data.error); return; }
+                database = data;
+                console.log("Đã tải xong:", database);
+                btn.innerText = "KIỂM TRA";
+                btn.disabled = false;
+                btn.classList.remove('opacity-50');
+                inputEl.focus();
+            } catch (error) {
+                console.error("Lỗi:", error);
+                btn.innerText = "LỖI KẾT NỐI";
+                alert("Không thể kết nối API Google Sheets.");
+            }
+        }
+        window.onload = fetchData;
+
+        function checkDevice() {
+            if (database.length === 0) { alert("Dữ liệu chưa tải xong."); return; }
+            const inputEl = document.getElementById('searchInput');
+            const inputVal = inputEl.value.trim();
+            const resultArea = document.getElementById('resultArea');
+            const errorMsg = document.getElementById('errorMsg');
+
+            if (!inputVal) { alert("Vui lòng nhập WMS Order No!"); inputEl.focus(); return; }
+
+            // Tìm kiếm (WMS Order No)
+            const foundData = database.find(item => 
+                String(item["WMS Order No"]).toLowerCase().trim() === inputVal.toLowerCase()
+            );
+
+            if (foundData) {
+                // Hiển thị dữ liệu
+                document.getElementById('res_wms').innerText = foundData["WMS Order No"];
+                document.getElementById('res_createTime').innerText = formatDate(foundData["Create Time"]);
+                document.getElementById('res_status').innerText = foundData["Status"];
+                document.getElementById('res_hub').innerText = foundData["Hub"];
+                document.getElementById('res_hubTime').innerText = formatDate(foundData["Hub Time run"]);
+
+                resultArea.classList.remove('hidden');
+                errorMsg.classList.add('hidden');
+                
+                // >>> GỌI HÀM PHÁT ÂM THANH THEO HUB <<<
+                playHubSound(foundData["Hub"]);
+
+            } else {
+                resultArea.classList.add('hidden');
+                errorMsg.classList.remove('hidden');
+                playSound("sound_error");
+            }
+
+            inputEl.value = ""; 
+            inputEl.focus();    
+        }
+
+        // --- HÀM XỬ LÝ ÂM THANH THEO TÊN HUB (Đã cập nhật theo yêu cầu) ---
+        function playHubSound(hubName) {
+            if (!hubName) { playSound("sound_success"); return; }
+            
+            let name = hubName.toString().trim(); // Giữ nguyên chữ hoa thường để so sánh chính xác nếu cần, hoặc toLowerCase để linh hoạt
+            
+            // 1. Bui Van Ba -> 5009
+            if (name.includes("Bui Van Ba")) {
+                playSound("sound_5009");
+            } 
+            // 2. VTB Hub -> 5174
+            else if (name.includes("VTB")) {
+                playSound("sound_5174");
+            }
+            // 3. Dao Tri Hub -> 142
+            else if (name.includes("Dao Tri")) {
+                playSound("sound_142");
+            }
+            // 4. Phuong 12 Hub -> 5194
+            else if (name.includes("Phuong 12")) {
+                playSound("sound_5194");
+            }
+            // 5. 50-HCM Binh Thanh Hub (Không có VTB hay Phuong 12) -> 5195
+            // Lưu ý: phải check cái này SAU 2 cái Bình Thạnh bên trên để tránh trùng
+            else if (name.includes("Binh Thanh Hub")) {
+                playSound("sound_5195");
+            }
+            // 6. 50-HCM D7 Hub -> 5001
+            // Check chính xác để không nhầm với D7/Bui Van Ba
+            else if (name.includes("50-HCM D7 Hub")) {
+                playSound("sound_5001");
+            }
+            // 7. 50-HCM D4 Hub -> 5007
+            else if (name.includes("50-HCM D4 Hub")) {
+                playSound("sound_5007");
+            }
+            // Mặc định
+            else {
+                playSound("sound_success");
+            }
+        }
+
+        function playSound(elementId) {
+            try {
+                // Dừng tất cả âm thanh đang chạy
+                document.querySelectorAll('audio').forEach(el => { el.pause(); el.currentTime = 0; });
+                
+                const audio = document.getElementById(elementId);
+                if (audio) {
+                    audio.play().catch(e => console.log("Lỗi play audio:", e));
+                } else {
+                    console.log("Không tìm thấy audio ID:", elementId);
+                    // Fallback nếu quên file
+                    document.getElementById("sound_success").play();
+                }
+            } catch (e) { console.log("Lỗi âm thanh:", e); }
+        }
+
+        function formatDate(dateStr) {
+            if (!dateStr) return "";
+            return String(dateStr).replace("T", " ").replace(".000Z", "");
+        }
+
+        document.getElementById("searchInput").addEventListener("keypress", function(event) {
+            if (event.key === "Enter") checkDevice();
+        });
+    </script>
+</body>
+</html>
