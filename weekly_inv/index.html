@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Weekly Report Inventory</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --green: #2e9e5b; --green-bg: #e7f7ee;
+    --amber: #d99a00; --amber-bg: #fff3d6;
+    --red: #d6483f; --red-bg: #fdeceb;
+    --grey: #9aa0a8; --grey-bg: #eef0f2;
+    --border: #e7e9ed;
+    --text: #1f2430;
+    --muted: #8a8f98;
+    --navy: #1f3a63;
+    --accent: #4f46e5;
+    --accent-bg: #eef0ff;
+    --accent-bg-strong: #d6d9fb;
+  }
+  * { box-sizing: border-box; }
+  .hidden { display:none !important; }
+  body { margin:0; font-family:"Inter","Segoe UI",Roboto,Arial,sans-serif; background:#eef1f5; color:var(--text); padding:20px; -webkit-font-smoothing:antialiased; }
+  .app { max-width:1280px; margin:0 auto; background:#fff; border:1px solid var(--border); border-radius:14px; overflow:hidden; box-shadow:0 4px 24px rgba(31,58,99,.08); }
+
+  .topbar { display:flex; align-items:center; justify-content:space-between; padding:16px 22px; border-bottom:1px solid var(--border); flex-wrap:wrap; gap:10px; background:linear-gradient(180deg,#fff,#fbfbfe); }
+  .topbar h1 { font-size:19px; font-weight:800; margin:0; color:var(--navy); letter-spacing:-.02em; }
+  .topbar h1::before { content:""; display:inline-block; width:8px; height:8px; border-radius:50%; background:var(--accent); margin-right:9px; vertical-align:middle; }
+  .topbar .scope { font-size:12px; color:var(--muted); margin-left:8px; }
+  .topbar-right { display:flex; align-items:center; gap:10px; }
+  .toggle { display:flex; border:1px solid var(--border); border-radius:8px; overflow:hidden; }
+  .toggle button { border:none; background:#fff; padding:6px 14px; font-size:12.5px; font-weight:600; cursor:pointer; color:var(--muted); transition:background .15s ease, color .15s ease; }
+  .toggle button:hover { color:var(--navy); }
+  .toggle button.active { background:var(--accent); color:#fff; }
+  .btn-outline { border:1px solid var(--border); background:#fff; border-radius:16px; padding:6px 12px; font-size:12.5px; font-weight:600; color:var(--navy); cursor:pointer; transition:border-color .15s ease, color .15s ease; }
+  .btn-outline:hover { border-color:var(--accent); color:var(--accent); }
+  .btn-solid { border:none; border-radius:16px; padding:7px 16px; font-size:12.5px; font-weight:700; color:#fff; cursor:pointer; display:inline-flex; align-items:center; gap:6px; box-shadow:0 2px 8px rgba(0,0,0,.12); transition:transform .12s ease, box-shadow .12s ease; }
+  .btn-solid:hover { transform:translateY(-1px); box-shadow:0 4px 12px rgba(0,0,0,.18); }
+  .btn-navy { background:var(--navy); }
+  .btn-orange { background:#e8622c; }
+
+  .body { display:grid; grid-template-columns:230px 1fr; }
+  .sidebar { border-right:1px solid var(--border); padding:22px 16px; background:linear-gradient(180deg,#fbfbff,#fff); }
+  .sidebar h3 { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.06em; color:var(--muted); text-align:center; margin:0 0 16px; }
+  .donut-wrap { display:flex; justify-content:center; }
+  .donut { width:150px; height:150px; border-radius:50%; position:relative; filter:drop-shadow(0 2px 6px rgba(31,58,99,.12)); }
+  .donut::before { content:""; position:absolute; inset:16px; background:#fff; border-radius:50%; }
+  .donut-label { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; }
+  .donut-label .pct { font-size:30px; font-weight:800; color:var(--navy); line-height:1; letter-spacing:-.02em; }
+  .donut-label .sub { font-size:10px; text-transform:uppercase; letter-spacing:.06em; color:var(--muted); margin-top:3px; }
+  .status-pill { display:block; margin:16px auto 20px; text-align:center; width:fit-content; padding:6px 20px; border-radius:14px; font-size:12px; font-weight:700; color:#fff; box-shadow:0 2px 8px rgba(0,0,0,.12); }
+  .legend { font-size:12px; }
+  .legend-item { display:flex; align-items:center; gap:8px; margin-bottom:9px; }
+  .legend-dot { width:9px; height:9px; border-radius:50%; flex:none; }
+  .legend-text b { display:block; color:var(--text); font-weight:600; }
+  .legend-text span { color:var(--muted); font-size:11px; }
+
+  .main { padding:16px 20px; overflow-x:auto; }
+  table { width:100%; border-collapse:collapse; border:1px solid var(--border); }
+  thead th { text-align:left; font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.05em; color:var(--navy); background:var(--accent-bg-strong); padding:10px 10px; border:1px solid var(--border); position:sticky; top:0; }
+  thead th.num, td.num { text-align:right; }
+  tbody td { padding:10px 10px; font-size:13px; font-weight:600; border:1px solid var(--border); vertical-align:middle; transition:background .1s ease; }
+  tbody tr.group-start td { border-top:1.5px solid #b9bdc7; }
+  tbody tr:hover td { background:var(--accent-bg); }
+  td.bucket { font-weight:800; color:var(--navy); font-size:12px; text-transform:uppercase; letter-spacing:.03em; vertical-align:middle; white-space:pre-line; }
+  td.metric { color:var(--navy); font-weight:700; }
+  .stt { color:var(--muted); }
+  .muted { color:var(--muted); }
+  .badge { display:inline-flex; align-items:center; gap:6px; padding:3px 11px; border-radius:12px; font-size:11px; font-weight:700; letter-spacing:.01em; }
+  .badge-green { background:var(--green-bg); color:var(--green); }
+  .badge-amber { background:var(--amber-bg); color:var(--amber); }
+  .badge-red   { background:var(--red-bg);   color:var(--red); }
+  .badge-grey  { background:var(--grey-bg);  color:var(--grey); }
+  .note { margin:14px 20px 0; background:#fff9e6; border:1px solid #f0e2a3; color:#6b5900; padding:9px 14px; border-radius:8px; font-size:12px; }
+
+  .modal-overlay { position:fixed; inset:0; background:rgba(15,20,30,.5); backdrop-filter:blur(2px); display:flex; align-items:center; justify-content:center; z-index:1000; }
+  .modal-overlay.hidden { display:none; }
+  .modal { background:#fff; border-radius:16px; width:640px; max-width:92vw; max-height:86vh; display:flex; flex-direction:column; box-shadow:0 20px 60px rgba(15,20,30,.25); }
+  .modal-header { display:flex; justify-content:space-between; align-items:flex-start; padding:22px 24px 14px; }
+  .modal-header h2 { margin:0 0 6px; font-size:19px; font-weight:800; color:var(--navy); letter-spacing:-.01em; }
+  .modal-header p { margin:0; font-size:12px; color:var(--muted); max-width:520px; }
+  .modal-close { border:none; background:var(--grey-bg); width:28px; height:28px; border-radius:50%; cursor:pointer; font-size:13px; color:var(--muted); flex:none; transition:background .15s ease; }
+  .modal-close:hover { background:var(--red-bg); color:var(--red); }
+  .modal-divider { border-top:1px solid var(--border); }
+  .modal-rule { padding:14px 24px 0; font-size:12px; color:var(--text); }
+  .modal-totalwrap { padding:12px 24px; }
+  .total-pill { display:inline-flex; align-items:center; gap:6px; border:1px solid var(--border); background:var(--accent-bg); border-radius:14px; padding:5px 14px; font-size:12px; color:var(--muted); }
+  .total-pill b { color:var(--accent); font-size:13px; }
+  .total-pill.warn b { color:var(--red); }
+  .modal-table-wrap { flex:1; overflow-y:auto; padding:0 24px; }
+  .modal-table { width:100%; border-collapse:collapse; }
+  .modal-table th { text-align:left; font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.04em; color:var(--muted); padding:8px 6px; border-bottom:1px solid var(--border); position:sticky; top:0; background:#fff; }
+  .modal-table td { padding:9px 6px; border-bottom:1px solid var(--border); vertical-align:middle; }
+  .modal-table .mname { color:var(--navy); font-weight:600; font-size:13px; }
+  .modal-table .mdir { display:block; font-weight:400; color:var(--muted); font-size:11px; }
+  .msetting-input { width:70px; border:1px solid var(--border); border-radius:7px; padding:6px 8px; font-size:13px; text-align:right; transition:border-color .15s ease; }
+  .msetting-input:focus { outline:none; border-color:var(--accent); }
+  .msetting-input:disabled { background:#f5f6f8; color:var(--muted); }
+  .modal-footer { display:flex; justify-content:flex-end; gap:10px; padding:16px 24px; border-top:1px solid var(--border); }
+  .btn-cancel { border:1px solid var(--border); background:#fff; padding:8px 18px; border-radius:8px; font-size:13px; font-weight:600; cursor:pointer; color:var(--text); transition:border-color .15s ease; }
+  .btn-cancel:hover { border-color:var(--muted); }
+  .btn-save { border:none; background:var(--accent); color:#fff; padding:8px 20px; border-radius:8px; font-size:13px; cursor:pointer; font-weight:700; box-shadow:0 2px 8px rgba(79,70,229,.3); transition:transform .12s ease; }
+  .btn-save:hover { transform:translateY(-1px); }
+
+  .project-panel { padding:16px 20px; overflow-x:auto; }
+  .project-panel table { width:100%; border-collapse:collapse; }
+  .project-panel td.project-name { color:var(--navy); font-weight:700; white-space:nowrap; }
+  .project-panel td.update { color:var(--text); font-size:12.5px; line-height:1.6; white-space:pre-line; min-width:420px; }
+  .project-panel td.pic { color:var(--muted); font-size:12px; white-space:pre-line; min-width:150px; }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <div class="topbar">
+    <div>
+      <h1 style="display:inline">Weekly Report Inventory</h1>
+    </div>
+    <div class="topbar-right">
+      <div class="toggle">
+        <button id="btnViewScorecard" class="active">Scorecard</button>
+        <button id="btnViewProject">Project Update</button>
+      </div>
+      <select id="weekSelect" class="btn-outline"></select>
+      <button class="btn-outline" id="btnToggleTable">▾ Hide Scorecard</button>
+      <button class="btn-solid btn-navy" id="btnOpenSettings">⚙ Metric Settings</button>
+      <button class="btn-solid btn-orange" id="btnRefreshData">⟳ Refresh Data</button>
+    </div>
+  </div>
+
+  <div class="body">
+    <div class="sidebar">
+      <h3>Overall Health Score</h3>
+      <div class="donut-wrap">
+        <div class="donut" id="donut">
+          <div class="donut-label">
+            <div class="pct" id="donutPct">–</div>
+            <div class="sub">score</div>
+          </div>
+        </div>
+      </div>
+      <div class="status-pill" id="statusPill">–</div>
+      <div class="legend">
+        <div class="legend-item"><span class="legend-dot" style="background:var(--green)"></span>
+          <span class="legend-text"><b>Healthy</b><span>80 – 100%</span></span></div>
+        <div class="legend-item"><span class="legend-dot" style="background:var(--amber)"></span>
+          <span class="legend-text"><b>Moderate</b><span>60 – 79%</span></span></div>
+        <div class="legend-item"><span class="legend-dot" style="background:var(--red)"></span>
+          <span class="legend-text"><b>Unhealthy</b><span>&lt; 60%</span></span></div>
+      </div>
+    </div>
+
+    <div class="main">
+      <table id="scoreTable">
+        <thead>
+          <tr>
+            <th>STT</th><th>Bucket</th><th>Metric Name</th>
+            <th class="num">Target</th><th class="num">W-1 Actual</th>
+            <th class="num">Reach %</th><th>Status</th>
+          </tr>
+        </thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="project-panel hidden" id="projectPanel">
+    <table>
+      <thead>
+        <tr><th>Pillar</th><th>Project Name</th><th>Weekly Update</th><th>PIC</th></tr>
+      </thead>
+      <tbody id="projectTbody"></tbody>
+    </table>
+  </div>
+</div>
+
+<div class="modal-overlay hidden" id="modalOverlay">
+  <div class="modal">
+    <div class="modal-header">
+      <div>
+        <h2>Metric Settings</h2>
+        <p>Configure scoring weight and the Moderate buffer for each metric.</p>
+      </div>
+      <button class="modal-close" id="modalClose">✕</button>
+    </div>
+    <div class="modal-divider"></div>
+    <div class="modal-rule"><b>Buffer rule:</b> luôn nhập giá trị dương. Chỉ số dạng % dùng điểm phần trăm (pp); các chỉ số khác dùng % của Target.</div>
+    <div class="modal-totalwrap">
+      <span class="total-pill" id="totalWeightPill">Total weight <b id="totalWeightValue">100%</b></span>
+    </div>
+    <div class="modal-table-wrap">
+      <table class="modal-table">
+        <thead>
+          <tr><th>Metric Name</th><th style="text-align:right">Weighted (%)</th><th style="text-align:right">Buffer (% / pp)</th></tr>
+        </thead>
+        <tbody id="settingsBody"></tbody>
+      </table>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-cancel" id="btnCancelSettings">Cancel</button>
+      <button class="btn-save" id="btnSaveSettings">Save Settings</button>
+    </div>
+  </div>
+</div>
+
+<script>
+let ROWS = [];
+let PROJECT_ROWS = [];
+let groups = [];
+let projectGroups = [];
+
+const STATUS_MAP = {
+  2: { label: "Healthy",   cls: "badge-green" },
+  1: { label: "Moderate",  cls: "badge-amber" },
+  0: { label: "Unhealthy", cls: "badge-red" },
+  "TBC": { label: "–", cls: "badge-grey" }
+};
+
+function isBlank(v){ return v === null || v === undefined || v === ""; }
+function isNA(v){ return v === "n/a" || v === "TBC"; }
+
+function fmtNumberOrPct(v){
+  if (isBlank(v)) return '<span class="muted">–</span>';
+  if (isNA(v)) return `<span class="muted">${v}</span>`;
+  if (typeof v === "number"){
+    if (Math.abs(v) <= 1) return (v*100).toFixed(2).replace(/\.00$/,"") + "%";
+    if (Number.isInteger(v)) return v.toLocaleString("en-US");
+    return v.toLocaleString("en-US", {maximumFractionDigits:2});
+  }
+  return v;
+}
+
+function fmtRatioPct(v){
+  if (isBlank(v)) return '<span class="muted">–</span>';
+  if (isNA(v)) return `<span class="muted">${v}</span>`;
+  if (typeof v === "number") return (v*100).toFixed(1) + "%";
+  return v;
+}
+
+function statusBadge(score){
+  const s = STATUS_MAP[score] || STATUS_MAP["TBC"];
+  return `<span class="badge ${s.cls}">${s.label}</span>`;
+}
+
+// Actual >= Target => Healthy; trong vùng Buffer dưới/trên Target => Moderate; ngoài Buffer => Unhealthy
+function computeHealth(target, actual, buffer, higherIsBetter){
+  if (higherIsBetter === null || higherIsBetter === undefined) return "TBC";
+  if (typeof target !== "number" || typeof actual !== "number") return "TBC";
+  const bufferNum = typeof buffer === "number" ? buffer : 0;
+  // Metric dạng % (Target ≤1) trừ/cộng Buffer trực tiếp (pp); metric dạng số thường dùng Buffer là % của Target
+  const offset = Math.abs(target) <= 1 ? bufferNum : target * bufferNum;
+  if (higherIsBetter){
+    if (actual >= target) return 2;
+    if (actual >= target - offset) return 1;
+    return 0;
+  }
+  if (actual <= target) return 2;
+  if (actual <= target + offset) return 1;
+  return 0;
+}
+
+// Forward-fill Bucket (Pillar) và gom nhóm để dùng rowspan
+function buildGroups(rows){
+  const gs = [];
+  let current = { pillar: "", rows: [] };
+  gs.push(current);
+  for (const row of rows){
+    const pillar = row[0];
+    if (!isBlank(pillar)) { current = { pillar, rows: [] }; gs.push(current); }
+    current.rows.push(row);
+  }
+  if (gs[0].rows.length === 0) gs.shift();
+  return gs;
+}
+
+function weightedHealthPct(){
+  let sum = 0, wsum = 0;
+  for (const r of ROWS){
+    const kpi = r[1], target = r[3], actual = r[4], buffer = r[12], weight = r[13];
+    const health = computeHealth(target, actual, buffer, getDirection(kpi));
+    if (typeof health === "number" && typeof weight === "number"){ sum += health*weight; wsum += weight; }
+  }
+  return wsum > 0 ? (sum/wsum/2*100) : null;
+}
+
+function scoreColor(pct){
+  if (pct === null) return "var(--grey)";
+  if (pct >= 80) return "var(--green)";
+  if (pct >= 60) return "var(--amber)";
+  return "var(--red)";
+}
+function scoreLabel(pct){
+  if (pct === null) return "–";
+  if (pct >= 80) return "Healthy";
+  if (pct >= 60) return "Moderate";
+  return "Unhealthy";
+}
+
+function renderDonut(){
+  const pct = weightedHealthPct();
+  const color = scoreColor(pct);
+  const donut = document.getElementById("donut");
+  const p = pct === null ? 0 : pct;
+  donut.style.background = `conic-gradient(${color} 0% ${p}%, #e2e5ea ${p}% 100%)`;
+  document.getElementById("donutPct").textContent = pct === null ? "–" : Math.round(pct) + "%";
+  const pill = document.getElementById("statusPill");
+  pill.textContent = scoreLabel(pct);
+  pill.style.background = color;
+}
+
+function renderTable(){
+  const tbody = document.getElementById("tbody");
+  tbody.innerHTML = "";
+  let stt = 0;
+  groups.forEach((g, gIdx) => {
+    g.rows.forEach((r, idx) => {
+      stt++;
+      const [, kpi, , target, actual, , , , , , , , buffer] = r;
+      const health = computeHealth(target, actual, buffer, getDirection(kpi));
+      let reach = null;
+      if (typeof target === "number" && typeof actual === "number" && target !== 0){
+        reach = actual / target;
+      }
+      const tr = document.createElement("tr");
+      if (idx === 0 && gIdx > 0) tr.classList.add("group-start");
+      let bucketCell = "";
+      if (idx === 0) bucketCell = `<td class="bucket" rowspan="${g.rows.length}">${g.pillar}</td>`;
+      tr.innerHTML = `
+        <td class="stt">${stt}</td>
+        ${bucketCell}
+        <td class="metric">${kpi}</td>
+        <td class="num">${fmtNumberOrPct(target)}</td>
+        <td class="num">${fmtNumberOrPct(actual)}</td>
+        <td class="num">${fmtRatioPct(reach)}</td>
+        <td>${statusBadge(health)}</td>
+      `;
+      tbody.appendChild(tr);
+    });
+  });
+}
+
+document.getElementById("btnToggleTable").addEventListener("click", () => {
+  const main = document.querySelector(".main");
+  main.style.display = main.style.display === "none" ? "" : "none";
+});
+
+// Hướng tốt của từng metric, chỉ dùng để hiển thị chú thích trong Metric Settings
+const HIGHER_IS_BETTER = {
+  "Inventory Cycle Count Accuracy": true,
+  "Pick Fail (Pick skip)*": false,
+  "WMS WH Cancellation": false,
+  "INV Manhour": false,
+  "CC productivity": true,
+  "Replenishment productivity": true,
+  "Slotting compliance": true,
+  "ABC compliance": true,
+  "Location Utilisation (Picking Area)": false,
+  "CBM Utilization (Overall)": false,
+  "% DEM value": false,
+  "Missing before OB": false,
+  "Damage after OB": false,
+  "Exception Unsellable": false,
+  "Total backlog > 10 days New": false,
+  "Missing investigate > 10days": false,
+  "% Black Stock": false,
+  "INV vol": null,
+  "# SKU": null,
+  "ADI": null,
+  "Average DOC (L30D) (by status)": null,
+  "% DOC > 30 days": false
+};
+
+// So khớp tên KPI không phân biệt hoa-thường/khoảng trắng thừa (dữ liệu từ Sheet có thể lệch nhẹ so với key)
+const HIGHER_IS_BETTER_NORM = {};
+Object.keys(HIGHER_IS_BETTER).forEach(k => { HIGHER_IS_BETTER_NORM[k.trim().toLowerCase()] = HIGHER_IS_BETTER[k]; });
+function getDirection(kpi){
+  if (typeof kpi !== "string") return null;
+  const norm = kpi.trim().toLowerCase();
+  return HIGHER_IS_BETTER_NORM.hasOwnProperty(norm) ? HIGHER_IS_BETTER_NORM[norm] : null;
+}
+
+function buildSettingsRows(){
+  const tbody = document.getElementById("settingsBody");
+  tbody.innerHTML = "";
+  ROWS.forEach((r, i) => {
+    const kpi = r[1], weight = r[13], buffer = r[12];
+    const dir = getDirection(kpi);
+    const dirLabel = dir === true ? "Higher is better" : dir === false ? "Lower is better" : "";
+    const weightVal = typeof weight === "number" ? Math.round(weight*1000)/10 : "";
+    const bufferVal = typeof buffer === "number" ? Math.round(buffer*10000)/100 : "";
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td class="mname">${kpi}${dirLabel ? `<span class="mdir">${dirLabel}</span>` : ""}</td>
+      <td><input type="number" class="msetting-input weight-input" data-idx="${i}" value="${weightVal}" min="0" max="100" step="0.1"></td>
+      <td><input type="number" class="msetting-input buffer-input" data-idx="${i}" value="${bufferVal}" min="0" step="0.01"></td>
+    `;
+    tbody.appendChild(tr);
+  });
+  document.querySelectorAll(".weight-input").forEach(inp => inp.addEventListener("input", () => {
+    const idx = parseInt(inp.dataset.idx);
+    const v = parseFloat(inp.value);
+    if (!isNaN(v)) ROWS[idx][13] = v/100;
+    updateTotalWeight();
+    renderDonut();
+    renderTable();
+  }));
+  document.querySelectorAll(".buffer-input").forEach(inp => inp.addEventListener("input", () => {
+    const idx = parseInt(inp.dataset.idx);
+    const v = parseFloat(inp.value);
+    if (!isNaN(v)) ROWS[idx][12] = v/100;
+  }));
+  updateTotalWeight();
+}
+
+function updateTotalWeight(){
+  let total = 0;
+  document.querySelectorAll(".weight-input").forEach(inp => {
+    const v = parseFloat(inp.value);
+    if (!isNaN(v)) total += v;
+  });
+  document.getElementById("totalWeightValue").textContent = (Math.round(total*10)/10) + "%";
+  document.getElementById("totalWeightPill").classList.toggle("warn", Math.round(total) !== 100);
+}
+
+let settingsSnapshot = null;
+
+function openSettings(){
+  settingsSnapshot = ROWS.map(r => [r[12], r[13]]); // lưu Buffer, Weight gốc để Cancel có thể khôi phục
+  buildSettingsRows();
+  document.getElementById("modalOverlay").classList.remove("hidden");
+}
+function closeSettings(){ document.getElementById("modalOverlay").classList.add("hidden"); }
+
+document.getElementById("btnOpenSettings").addEventListener("click", openSettings);
+document.getElementById("modalClose").addEventListener("click", closeSettings);
+document.getElementById("btnCancelSettings").addEventListener("click", () => {
+  if (settingsSnapshot){
+    ROWS.forEach((r, i) => { r[12] = settingsSnapshot[i][0]; r[13] = settingsSnapshot[i][1]; });
+  }
+  closeSettings();
+  renderDonut();
+  renderTable();
+});
+document.getElementById("modalOverlay").addEventListener("click", (e) => {
+  if (e.target.id === "modalOverlay") closeSettings();
+});
+document.getElementById("btnSaveSettings").addEventListener("click", () => {
+  closeSettings();
+  renderDonut();
+  renderTable();
+});
+
+function renderProjectTable(){
+  const tbody = document.getElementById("projectTbody");
+  tbody.innerHTML = "";
+  for (const g of projectGroups){
+    g.rows.forEach((r, idx) => {
+      const [, name, update, pic] = r;
+      const tr = document.createElement("tr");
+      let bucketCell = "";
+      if (idx === 0) bucketCell = `<td class="bucket" rowspan="${g.rows.length}">${g.pillar}</td>`;
+      tr.innerHTML = `
+        ${bucketCell}
+        <td class="project-name">${name}</td>
+        <td class="update">${update || '<span class="muted">–</span>'}</td>
+        <td class="pic">${pic || '<span class="muted">–</span>'}</td>
+      `;
+      tbody.appendChild(tr);
+    });
+  }
+}
+
+function showView(view){
+  const isScorecard = view === "scorecard";
+  document.querySelector(".body").classList.toggle("hidden", !isScorecard);
+  document.getElementById("projectPanel").classList.toggle("hidden", isScorecard);
+  document.getElementById("btnViewScorecard").classList.toggle("active", isScorecard);
+  document.getElementById("btnViewProject").classList.toggle("active", !isScorecard);
+}
+document.getElementById("btnViewScorecard").addEventListener("click", () => showView("scorecard"));
+document.getElementById("btnViewProject").addEventListener("click", () => showView("project"));
+
+// ==== Dữ liệu được Python (generate_dashboard.py) nhúng sẵn vào đây mỗi lần chạy lại ====
+// __WEEKS_DATA_START__
+const WEEKS_DATA = {"INV [31-Aug]": {"rows": [["Accurate", "Inventory Cycle Count Accuracy", "Linh Le", 0.99, 0.9889, 0.0011123470522803013, null, 0.988, 0.997979797979798, null, 1, "Moderate", 0.02, 0.2], [null, "Pick Fail (Pick skip)*", null, "n/a", "n/a", "n/a", null, "n/a", "n/a", "Local view, tính theo pick line => align target sau", "TBC", "TBC", 0.05, 0.1], [null, "WMS WH Cancellation", null, 0.0007, 0.0005, 0.39999999999999997, null, 0.0006, 0.8571428571428571, null, 2, "Healthy", 0.15, 0.1], ["Optimized\n(Efficiency)", "INV Manhour", null, 16535, 16939, -0.023850286321506584, null, 64904, 3.925249470819474, null, 1, "Moderate", 0.05, 0.1], [null, "CC productivity", null, 1024, 1501, 0.0006662225183211193, null, 1312, 1.28125, null, 2, "Healthy", 0.1, 0.06], [null, "Replenishment productivity", null, 328, 482, 0.002074688796680498, null, 463, 1.4115853658536586, null, 2, "Healthy", 0.1, 0.06], [null, "Slotting compliance", "Bui Quoc Trung", "n/a", "n/a", "n/a", null, "n/a", "n/a", "Underdefine logic + Target", "TBC", "TBC", "n/a", "n/a"], [null, "ABC compliance", null, "n/a", "n/a", "n/a", null, "n/a", "n/a", "Underdefine logic + Target", "TBC", "TBC", "n/a", "n/a"], [null, "Location Utilisation (Picking Area)", null, 0.9, 0.7942, 0.11755555555555555, null, null, null, null, 2, "Healthy", 0.1, 0.04], [null, "CBM Utilization (Overall)", null, 0.8, 0.6662, 0.16725000000000004, null, null, null, null, 2, "Healthy", 0.1, 0.04], ["Sustainable", "% DEM value", "Doan Thi Minh Trang", 0.00316, 0.00392, -0.19387755102040813, null, null, null, null, 0, "Unhealthy", 0.0005, 0.1], [null, "Missing before OB", null, 0.0005, 0.00108, -0.537037037037037, null, null, null, null, 0, "Unhealthy", "n/a", "n/a"], [null, "Damage after OB", null, 0.00219, 0.0023, -0.04782608695652168, null, null, null, null, 0, "Unhealthy", "n/a", "n/a"], [null, "Exception Unsellable", null, 0.032, 0.0294, 0.08843537414965992, null, null, null, null, 2, "Healthy", 0.1, 0.05], [null, "Total backlog > 10 days New", null, "n/a", "n/a", "n/a", null, "n/a", "n/a", "Underdefine logic + Target", "TBC", "TBC", "n/a", 0.05], [null, "Missing investigate > 10days", null, "TBC", 0.00197, "-", null, null, null, "Điều chỉnh policy, giảm chỉ threshold 30 > 10 days, Align target sau", "TBC", "TBC", 0.1, 0.05], [null, "% Black Stock", null, 0.08, 0.084, null, null, null, null, "lấy số REG report", 1, "Moderate", 0.1, 0.05], ["DOC", "INV vol", "Quoc Trung Nguyen", "TBC", 12886653, -0.06704938616718324, null, null, null, "Logic lấy snap shot inv on hand Last day của week", "TBC", "TBC", "n/a", "n/a"], [null, "# SKU", null, "TBC", 104512, -0.044900570880115176, null, null, null, "Logic lấy snap shot inv on hand Last day của week", "TBC", "TBC", "n/a", "n/a"], [null, "ADI", null, "TBC", 435811.4285714286, "-", null, null, null, null, "TBC", "TBC", "n/a", "n/a"], [null, "Average DOC (L30D) (by status)", null, "TBC", 25, "-", null, null, null, "Checking logic về DOC và ADI của team DSM", "TBC", "TBC", "n/a", "n/a"], [null, "% DOC > 30 days", null, "n/a", "n/a", "n/a", null, null, null, null, "TBC", "TBC", "n/a", "n/a"]], "projectRows": [["Fundamenteal", "Inventory Slotting", null, "Nguyen Khanh Huu \nBui Quoc Trung"], ["INV Accurate", "Zone Keeper - phase 02", "Context: Currently, the Zone Keeper project has been deployed across the warehouses, with alignment on key items: verifying movement counts, controlling assigned zones, and maintaining 5S within each zone.\n\nAction: Deploy flexible zone keepers scaled to Pick/Put headcount; re-audit zone keeper allocation across all warehouses, with a focus on new sites (VNA-Expand, Ngan Ha WH)", "Quoc Trung Nguyen"], ["DEM SBS", "DEM - Deep dive Vinamilk data", null, "Dang Nguyen Cong Hai\nDoan Thi Minh Trang"], [null, "DEM - Test luồng hàng Vinamlik", null, "Nguyen To Thuy Thao\nDoan Thi Minh Trang"], ["Efficiency", "Blackstock Analysis", "Phase 1. Focus on Black stock\nContext: Per current system data, there are 15,031 SKUs with DOC ≥ 60 days or with no order activity. This list accounts for 1.07 million units and 2,002 CBM.\n\nAction:\n- Align with the DSM team on the black stock logic and sync up with DSM on the handling direction for this list.\n- In addition, review the available options for each DOC band: 60–90, 90–120, and >120 days.", "Bui Quoc Trung"], [null, "INV manhour improvement", "Phase 1. Focus on Cyclce Count\nContext: CC manhour allocation varies significantly across warehouses due to fragmented counting rules driven by different operational characteristics. This results in inconsistent resource utilization and creates an opportunity for standardization and productivity improvement.\n\nAction: Conduct a cross-WH benchmarking of counting requirements, identify the root causes behind manhour differences, and leverage best practices to develop a standardized CC framework applicable across warehouses within the same business line.\n\nProgress: VNS has demonstrated that lower CC manhour utilization can be achieved while maintaining high inventory accuracy. A VNS–VNN sharing session will be conducted to identify the key practices driving this performance and implement applicable improvements at VNN in September. ETA: 5-Sep", "Linh Le"], [null, "Dynamic Replenishemnt", "Context :Currently, Replenishment tasks at the warehouses are still performed manually. Staff print paper lists from the support tool, follow them, and pick by quantity. Although operations are still based on the WMS, the process is not yet automated and wastes time on travel and task retrieval.\n\nAction: Deploy the Dynamic Replenishment feature. The system automatically generates tasks and assigns them to user accounts based on predefined settings.\n\nProgress\nIn August, a pilot was launched at VNA to validate the operational logic and fix system bugs.", "Bui Quoc Trung"], [null, "Mapping surpus Accross WH", "Context: Surplus inventory is frequently generated during warehouse operations. After internal mapping against missing inventory, the remaining surplus is typically liquidated. While liquidation helps free up warehouse space, it generates limited value due to the low liquidation price.\n\nAction: Establish a monthly cross-WH surplus mapping process to recover missing inventory and maximize the value of surplus stock before liquidation.\n\nProgress / Impact:\n\nJuly: Recovered 2,314 missing items, generating savings of > VND 200M \nAugust: Recovered 1,421 missing items, generating savings of ~VND 100M.", "Linh Le"]]}, "INV [7-Sep]": {"rows": [["Accurate", "Inventory Cycle Count Accuracy", "Linh Le", 0.99, null, "#DIV/0! (Function DIVIDE parameter 2 cannot be zero.)", null, 0.988, 0.997979797979798, null, 0, "Unhealthy", 0.02, 0.2], [null, "Pick Fail (Pick skip)*", null, "n/a", null, "n/a", null, "n/a", "n/a", "Local view, tính theo pick line => align target sau", "TBC", "TBC", 0.05, 0.1], [null, "WMS WH Cancellation", null, 0.0007, null, "#DIV/0! (Function DIVIDE parameter 2 cannot be zero.)", null, 0.0006, 0.8571428571428571, null, 2, "Healthy", 0.15, 0.1], ["Optimized\n(Efficiency)", "INV Manhour", null, 16535, null, "#DIV/0! (Function DIVIDE parameter 2 cannot be zero.)", null, 64904, 3.925249470819474, null, 2, "Healthy", 0.05, 0.1], [null, "CC productivity", null, 1024, null, "#DIV/0! (Function DIVIDE parameter 2 cannot be zero.)", null, 1312, 1.28125, null, 0, "Unhealthy", 0.1, 0.06], [null, "Replenishment productivity", null, 328, null, "#DIV/0! (Function DIVIDE parameter 2 cannot be zero.)", null, 463, 1.4115853658536586, null, 0, "Unhealthy", 0.1, 0.06], [null, "Slotting compliance", "Bui Quoc Trung", "n/a", null, "n/a", null, "n/a", "n/a", "Underdefine logic + Target", "TBC", "TBC", "n/a", "n/a"], [null, "ABC compliance", null, "n/a", null, "n/a", null, "n/a", "n/a", "Underdefine logic + Target", "TBC", "TBC", "n/a", "n/a"], [null, "Location Utilisation (Picking Area)", null, 0.9, null, 1, null, null, null, null, 2, "Healthy", 0.1, 0.04], [null, "CBM Utilization (Overall)", null, 0.8, null, 1, null, null, null, null, 2, "Healthy", 0.1, 0.04], ["Sustainable", "% DEM value", "Doan Thi Minh Trang", 0.00316, null, "#DIV/0! (Function DIVIDE parameter 2 cannot be zero.)", null, null, null, null, 2, "Healthy", 0.0005, 0.1], [null, "Missing before OB", null, 0.0005, null, "#DIV/0! (Function DIVIDE parameter 2 cannot be zero.)", null, null, null, null, 2, "Healthy", "n/a", "n/a"], [null, "Damage after OB", null, 0.00219, null, "#DIV/0! (Function DIVIDE parameter 2 cannot be zero.)", null, null, null, null, 2, "Healthy", "n/a", "n/a"], [null, "Exception Unsellable", null, 0.032, null, "#DIV/0! (Function DIVIDE parameter 2 cannot be zero.)", null, null, null, null, 2, "Healthy", 0.1, 0.05], [null, "Total backlog > 10 days New", null, "n/a", null, "n/a", null, "n/a", "n/a", "Underdefine logic + Target", "TBC", "TBC", "n/a", 0.05], [null, "Missing investigate > 10days", null, "TBC", null, "-", null, null, null, "Điều chỉnh policy, giảm chỉ threshold 30 > 10 days, Align target sau", "TBC", "TBC", 0.1, 0.05], [null, "% Black Stock", null, 0.08, null, null, null, null, null, "lấy số REG report", 2, "Healthy", 0.1, 0.05], ["DOC", "INV vol", "Quoc Trung Nguyen", "TBC", null, 1, null, null, null, "Logic lấy snap shot inv on hand Last day của week", "TBC", "TBC", "n/a", "n/a"], [null, "# SKU", null, "TBC", null, 1, null, null, null, "Logic lấy snap shot inv on hand Last day của week", "TBC", "TBC", "n/a", "n/a"], [null, "ADI", null, "TBC", null, "-", null, null, null, null, "TBC", "TBC", "n/a", "n/a"], [null, "Average DOC (L30D) (by status)", null, "TBC", null, "-", null, null, null, "Checking logic về DOC và ADI của team DSM", "TBC", "TBC", "n/a", "n/a"], [null, "% DOC > 30 days", null, "n/a", null, "n/a", null, null, null, null, "TBC", "TBC", "n/a", "n/a"]], "projectRows": [["Fundamenteal", "Inventory Slotting", null, "Nguyen Khanh Huu"], ["INV Accurate", "Zone Keeper - phase 02", "Context: Currently, the Zone Keeper project has been deployed across the warehouses, with alignment on key items: verifying movement counts, controlling assigned zones, and maintaining 5S within each zone.\n\nAction: Deploy flexible zone keepers scaled to Pick/Put headcount; re-audit zone keeper allocation across all warehouses, with a focus on new sites (VNA-Expand, Ngan Ha WH)", "Quoc Trung Nguyen"], ["DEM SBS", "DEM - Deep dive Vinamilk data", null, "Dang Nguyen Cong Hai\nDoan Thi Minh Trang"], [null, "DEM - Test luồng hàng Vinamlik", null, "Nguyen To Thuy Thao\nDoan Thi Minh Trang"], ["Efficiency", "Blackstock Analysis", "Phase 1. Focus on Black stock\nContext: Per current system data, there are 15,031 SKUs with DOC ≥ 60 days or with no order activity. This list accounts for 1.07 million units and 2,002 CBM.\n\nAction:\n- Align with the DSM team on the black stock logic and sync up with DSM on the handling direction for this list.\n- In addition, review the available options for each DOC band: 60–90, 90–120, and >120 days.", "Bui Quoc Trung"], [null, "INV manhour improvement", "Phase 1. Focus on Cyclce Count\nContext: CC manhour allocation varies significantly across warehouses due to fragmented counting rules driven by different operational characteristics. This results in inconsistent resource utilization and creates an opportunity for standardization and productivity improvement.\n\nAction: Conduct a cross-WH benchmarking of counting requirements, identify the root causes behind manhour differences, and leverage best practices to develop a standardized CC framework applicable across warehouses within the same business line.\n\nProgress: VNS has demonstrated that lower CC manhour utilization can be achieved while maintaining high inventory accuracy. A VNS–VNN sharing session will be conducted to identify the key practices driving this performance and implement applicable improvements at VNN in September. ETA: 5-Sep", "Linh Le"], [null, "Dynamic Replenishemnt", "Context :Currently, Replenishment tasks at the warehouses are still performed manually. Staff print paper lists from the support tool, follow them, and pick by quantity. Although operations are still based on the WMS, the process is not yet automated and wastes time on travel and task retrieval.\n\nAction: Deploy the Dynamic Replenishment feature. The system automatically generates tasks and assigns them to user accounts based on predefined settings.\n\nProgress\nIn August, a pilot was launched at VNA to validate the operational logic and fix system bugs.", "Bui Quoc Trung"], [null, "Mapping surpus Accross WH", "Context: Surplus inventory is frequently generated during warehouse operations. After internal mapping against missing inventory, the remaining surplus is typically liquidated. While liquidation helps free up warehouse space, it generates limited value due to the low liquidation price.\n\nAction: Establish a monthly cross-WH surplus mapping process to recover missing inventory and maximize the value of surplus stock before liquidation.\n\nProgress / Impact:\n\nJuly: Recovered 2,314 missing items, generating savings of > VND 200M \nAugust: Recovered 1,421 missing items, generating savings of ~VND 100M.", "Linh Le"]]}};
+// __WEEKS_DATA_END__
+
+function loadWeek(name){
+  const data = WEEKS_DATA[name];
+  if (!data) return;
+  document.getElementById("weekSelect").value = name;
+  ROWS = data.rows;
+  PROJECT_ROWS = data.projectRows;
+  groups = buildGroups(ROWS);
+  projectGroups = buildGroups(PROJECT_ROWS);
+  renderDonut();
+  renderTable();
+  renderProjectTable();
+}
+
+function populateWeekSelect(){
+  const sel = document.getElementById("weekSelect");
+  sel.innerHTML = Object.keys(WEEKS_DATA).map(name => `<option value="${name}">${name}</option>`).join("");
+}
+
+document.getElementById("weekSelect").addEventListener("change", (e) => loadWeek(e.target.value));
+document.getElementById("btnRefreshData").addEventListener("click", () => location.reload());
+
+populateWeekSelect();
+const weekNames = Object.keys(WEEKS_DATA);
+loadWeek(weekNames[weekNames.length - 1]);
+</script>
+</body>
+</html>
